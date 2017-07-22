@@ -1,12 +1,21 @@
 package com.android.server.core.handler;
 
+import com.android.server.common.event.UserOfflineEvent;
+import com.android.server.common.event.UserOnlineEvent;
 import com.android.server.core.connection.Connection;
 import com.android.server.core.connection.SessionContext;
 import com.android.server.core.message.BindUserMessage;
+import com.android.server.core.message.ErrorMessage;
 import com.android.server.core.message.OkMessage;
 import com.android.server.netty.codec.protocol.Command;
 import com.android.server.netty.codec.protocol.Packet;
+import com.android.server.router.LocalRouter;
+import com.android.server.router.LocalRouterManager;
+import com.android.server.router.RouterCenter;
+import com.android.server.utils.EventBus;
 import com.android.server.utils.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by kiddo on 17-7-15.
@@ -14,6 +23,8 @@ import com.android.server.utils.Strings;
 
 public final class BindUserHandler extends BaseMassageHandler<BindUserMessage> {
     //private BindValidator validator = BindValidatorFactory.create();
+    public static final Logger LOGGER = LoggerFactory.getLogger(RouterCenter.class);
+
 
     @Override
     public BindUserMessage decode(Packet packet, Connection connection) {
@@ -31,8 +42,8 @@ public final class BindUserHandler extends BaseMassageHandler<BindUserMessage> {
 
     private void bind(BindUserMessage message) {
         if (Strings.isNullOrEmpty(message.userId)) {
-            //ErrorMessage.from(message).setReason("invalid param").close();
-            //Logs.CONN.error("bind user failure for invalid param, conn={}", message.getConnection());
+            ErrorMessage.from(message).setReason("invalid param").close();
+            LOGGER.warn("bind user failure for invalid param, conn={}", message.getConnection());
             return;
         }
         //1.绑定用户时先看下是否握手成功
@@ -43,29 +54,29 @@ public final class BindUserHandler extends BaseMassageHandler<BindUserMessage> {
                 if (message.userId.equals(context.userId)) {
                     context.tags = message.tags;
                     OkMessage.from(message).setData("bind success").sendRaw();
-//                    Logs.CONN.info("rebind user success, userId={}, session={}", message.userId, context);
+                    LOGGER.warn("rebind user success, userId={}, session={}", message.userId, context);
                     return;
                 } else {
                     unbind(message);
                 }
             }
             //2.如果握手成功，就把用户链接信息注册到路由中心，本地和远程各一份
-//            boolean success = validator.validate(message.userId) && RouterCenter.I.register(message.userId, message.getConnection());
-//            if (success) {
-//                context.userId = message.userId;
-//                context.tags = message.tags;
-//                //EventBus.I.post(new UserOnlineEvent(message.getConnection(), message.userId));
-//                OkMessage.from(message).setData("bind success").sendRaw();
-//                //Logs.CONN.info("bind user success, userId={}, session={}", message.userId, context);
-//            } else {
-//                //3.注册失败再处理下，防止本地注册成功，远程注册失败的情况，只有都成功了才叫成功
-//                RouterCenter.I.unRegister(message.userId, context.getClientType());
-//                ErrorMessage.from(message).setReason("bind failed").close();
-//                Logs.CONN.info("bind user failure, userId={}, session={}", message.userId, context);
-//            }
+            boolean success = RouterCenter.I.register(message.userId, message.getConnection());
+            if (success) {
+                context.userId = message.userId;
+                context.tags = message.tags;
+                EventBus.I.post(new UserOnlineEvent(message.getConnection(), message.userId));
+                OkMessage.from(message).setData("bind success").sendRaw();
+                LOGGER.warn("bind user success, userId={}, session={}", message.userId, context);
+            } else {
+                //3.注册失败再处理下，防止本地注册成功，远程注册失败的情况，只有都成功了才叫成功
+                RouterCenter.I.unRegister(message.userId, context.getClientType());
+                ErrorMessage.from(message).setReason("bind failed").close();
+                LOGGER.warn("bind user failure, userId={}, session={}", message.userId, context);
+            }
         } else {
-//            ErrorMessage.from(message).setReason("not handshake").close();
-//            Logs.CONN.error("bind user failure not handshake, userId={}, conn={}", message.userId, message.getConnection());
+            ErrorMessage.from(message).setReason("not handshake").close();
+            LOGGER.warn("bind user failure not handshake, userId={}, conn={}", message.userId, message.getConnection());
         }
     }
 
@@ -77,8 +88,8 @@ public final class BindUserHandler extends BaseMassageHandler<BindUserMessage> {
      */
     private void unbind(BindUserMessage message) {
         if (Strings.isNullOrEmpty(message.userId)) {
-           // ErrorMessage.from(message).setReason("invalid param").close();
-           // Logs.CONN.error("unbind user failure invalid param, session={}", message.getConnection().getSessionContext());
+            ErrorMessage.from(message).setReason("invalid param").close();
+            LOGGER.warn("unbind user failure invalid param, session={}", message.getConnection().getSessionContext());
             return;
         }
         //1.解绑用户时先看下是否握手成功
@@ -97,29 +108,29 @@ public final class BindUserHandler extends BaseMassageHandler<BindUserMessage> {
 //                }
 //            }
             //3.删除本地路由信息
-//            LocalRouterManager localRouterManager = RouterCenter.I.getLocalRouterManager();
-//            LocalRouter localRouter = localRouterManager.lookup(userId, clientType);
-//            if (localRouter != null) {
-//                String deviceId = localRouter.getRouteValue().getSessionContext().deviceId;
-//                if (context.deviceId.equals(deviceId)) {//判断是否是同一个设备
-//                    unRegisterSuccess = localRouterManager.unRegister(userId, clientType) && unRegisterSuccess;
-//                }
-//            }
+            LocalRouterManager localRouterManager = RouterCenter.I.getLocalRouterManager();
+            LocalRouter localRouter = localRouterManager.lookup(userId, clientType);
+            if (localRouter != null) {
+                String deviceId = localRouter.getRouteValue().getSessionContext().deviceId;
+                if (context.deviceId.equals(deviceId)) {//判断是否是同一个设备
+                    unRegisterSuccess = localRouterManager.unRegister(userId, clientType) && unRegisterSuccess;
+                }
+            }
 
             //4.路由删除成功，广播用户下线事件
-//            if (unRegisterSuccess) {
-//                context.userId = null;
-//                context.tags = null;
-//                EventBus.I.post(new UserOfflineEvent(message.getConnection(), userId));
-//                OkMessage.from(message).setData("unbind success").sendRaw();
-//                Logs.CONN.info("unbind user success, userId={}, session={}", userId, context);
-//            } else {
-//                ErrorMessage.from(message).setReason("unbind failed").sendRaw();
-//                Logs.CONN.error("unbind user failure, unRegister router failure, userId={}, session={}", userId, context);
-//            }
+            if (unRegisterSuccess) {
+                context.userId = null;
+                context.tags = null;
+                EventBus.I.post(new UserOfflineEvent(message.getConnection(), userId));
+                OkMessage.from(message).setData("unbind success").sendRaw();
+                LOGGER.warn("unbind user success, userId={}, session={}", userId, context);
+            } else {
+                ErrorMessage.from(message).setReason("unbind failed").sendRaw();
+                LOGGER.warn("unbind user failure, unRegister router failure, userId={}, session={}", userId, context);
+            }
         } else {
-//            ErrorMessage.from(message).setReason("not handshake").close();
-//            Logs.CONN.error("unbind user failure not handshake, userId={}, session={}", message.userId, context);
+            ErrorMessage.from(message).setReason("not handshake").close();
+            LOGGER.warn("unbind user failure not handshake, userId={}, session={}", message.userId, context);
         }
     }
 
