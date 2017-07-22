@@ -5,7 +5,7 @@ import com.android.server.core.connection.Connection;
 /**
  * Created by root on 17-7-22.
  */
-public final class UserOfflineEvent {
+public final class UserOfflineEvent implements Event{
 
     private final Connection connection;
     private final String userId;

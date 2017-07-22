@@ -1,6 +1,7 @@
 package com.android.server.router;
 
 import com.android.server.common.event.ConnectionCloseEvent;
+import com.android.server.common.event.UserOfflineEvent;
 import com.android.server.core.connection.Connection;
 import com.android.server.core.connection.SessionContext;
 import com.android.server.utils.EventBus;
@@ -29,26 +30,40 @@ public final class LocalRouterManager implements RouterManager<LocalRouter> {
     @Override
     public LocalRouter register(String userId, LocalRouter router) {
         LOGGER.info("register local router success userId={}, router={}", userId, router);
-        return routers.computeIfAbsent(userId, s -> new HashMap<>(1)).put(router.getClientType(), router);
+        Map<Integer, LocalRouter> map = new HashMap<>(1);
+        map.put(router.getClientType(), router);
+        routers.put(userId, map);
+        return router;
     }
 
     @Override
     public boolean unRegister(String userId, int clientType) {
-        LocalRouter router = routers.getOrDefault(userId, EMPTY).remove(clientType);
-        LOGGER.info("unRegister local router success userId={}, router={}", userId, router);
+        if (routers.get(userId) != null){
+            routers.get(userId).remove(clientType);
+            return true;
+        } else {
+            EMPTY.remove(clientType);
+        }
         return true;
     }
 
     @Override
     public Set<LocalRouter> lookupAll(String userId) {
-        return new HashSet<>(routers.getOrDefault(userId, EMPTY).values());
+        if (routers.get(userId) != null){
+            return new HashSet<>(routers.get(userId).values());
+        } else {
+            return null;
+        }
     }
 
     @Override
     public LocalRouter lookup(String userId, int clientType) {
-        LocalRouter router = routers.getOrDefault(userId, EMPTY).get(clientType);
-        LOGGER.info("lookup local router userId={}, router={}", userId, router);
-        return router;
+        if (routers.get(userId) != null){
+            LOGGER.info("lookup local router userId={}, router={}", userId, routers.get(userId).get(clientType));
+            return routers.get(userId).get(clientType);
+        } else {
+            return EMPTY.get(clientType);
+        }
     }
 
     public Map<String, Map<Integer, LocalRouter>> routers() {
@@ -71,14 +86,23 @@ public final class LocalRouterManager implements RouterManager<LocalRouter> {
 
         EventBus.I.post(new UserOfflineEvent(event.connection, userId));
         int clientType = context.getClientType();
-        LocalRouter localRouter = routers.getOrDefault(userId, EMPTY).get(clientType);
+        LocalRouter localRouter = null ;
+        if (routers.get(userId) == null){
+            localRouter = EMPTY.get(clientType);
+        }else {
+            localRouter = routers.get(userId).get(clientType);
+        }
         if (localRouter == null) return;
 
         String connId = connection.getId();
         //2.检测下，是否是同一个链接, 如果客户端重连，老的路由会被新的链接覆盖
         if (connId.equals(localRouter.getRouteValue().getId())) {
             //3.删除路由
-            routers.getOrDefault(userId, EMPTY).remove(clientType);
+            if (routers.get(userId) == null){
+                localRouter = EMPTY.remove(clientType);
+            }else {
+                localRouter = routers.get(userId).remove(clientType);
+            }
             LOGGER.info("clean disconnected local route, userId={}, route={}", userId, localRouter);
         } else { //如果不相等，则log一下
             LOGGER.info("clean disconnected local route, not clean:userId={}, route={}", userId, localRouter);

@@ -1,5 +1,6 @@
 package com.android.server.utils;
 
+import com.android.server.common.event.Event;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.SubscriberExceptionContext;
 import com.google.common.eventbus.SubscriberExceptionHandler;
