@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/mpns/mpns.iml" filepath="$PROJECT_DIR$/mpns/mpns.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mpns-web/mpns-web.iml" filepath="$PROJECT_DIR$/mpns-web/mpns-web.iml" />
       <module fileurl="file://$PROJECT_DIR$/push.iml" filepath="$PROJECT_DIR$/push.iml" />
     </modules>
   </component>
