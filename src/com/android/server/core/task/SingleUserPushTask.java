@@ -5,18 +5,24 @@ import com.android.server.core.connection.Connection;
 import com.android.server.core.message.IPushMessage;
 import com.android.server.core.message.Message;
 import com.android.server.core.message.PushMessage;
+import com.android.server.router.LocalRouter;
+import com.android.server.router.LocalRouterManager;
+import com.android.server.router.RouterCenter;
 import com.android.server.utils.TimeLine;
 
 import java.util.concurrent.ScheduledExecutorService;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by kiddo on 17-7-15.
  */
 
 public final class SingleUserPushTask implements PushTask, ChannelFutureListener {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SingleUserPushTask.class);
 
 
     private final IPushMessage message;
@@ -61,6 +67,7 @@ public final class SingleUserPushTask implements PushTask, ChannelFutureListener
     public void run() {
         if (checkTimeout()) return;// 超时
 
+        LOGGER.warn("开始查找本地路由");
         if (checkLocal(message)) return;// 本地连接存在
 
         checkRemote(message);//本地连接不存在，检测远程路由
@@ -90,31 +97,31 @@ public final class SingleUserPushTask implements PushTask, ChannelFutureListener
     private boolean checkLocal(IPushMessage message) {
         String userId = message.getUserId();
         int clientType = message.getClientType();
-        //LocalRouter localRouter = RouterCenter.I.getLocalRouterManager().lookup(userId, clientType);
+        LocalRouter localRouter = RouterCenter.I.getLocalRouterManager().lookup(userId, clientType);
 
         //1.如果本机不存在，再查下远程，看用户是否登陆到其他机器
-//        if (localRouter == null) return false;
-//
-//        Connection connection = localRouter.getRouteValue();
-//
-//        //2.如果链接失效，先删除本地失效的路由，再查下远程路由，看用户是否登陆到其他机器
-//        if (!connection.isConnected()) {
-//
-//            Logs.PUSH.warn("[SingleUserPush] find local router but conn disconnected, message={}, conn={}", message, connection);
-//
-//            //删除已经失效的本地路由
-//            RouterCenter.I.getLocalRouterManager().unRegister(userId, clientType);
-//
-//            return false;
-//        }
+        if (localRouter == null) return false;
+
+        Connection connection = localRouter.getRouteValue();
+
+        //2.如果链接失效，先删除本地失效的路由，再查下远程路由，看用户是否登陆到其他机器
+        if (!connection.isConnected()) {
+
+            LOGGER.warn("[SingleUserPush] find local router but conn disconnected, message={}, conn={}", message, connection);
+
+            //删除已经失效的本地路由
+            RouterCenter.I.getLocalRouterManager().unRegister(userId, clientType);
+
+            return false;
+        }
 
         //3.检测TCP缓冲区是否已满且写队列超过最高阀值
-//        if (!connection.getChannel().isWritable()) {
-//            PushCenter.I.getPushListener().onFailure(message, timeLine.failureEnd().getTimePoints());
-//
-//            Logs.PUSH.error("[SingleUserPush] push message to client failure, tcp sender too busy, message={}, conn={}", message, connection);
-//            return true;
-//        }
+        if (!connection.getChannel().isWritable()) {
+            //PushCenter.I.getPushListener().onFailure(message, timeLine.failureEnd().getTimePoints());
+
+            LOGGER.warn("[SingleUserPush] push message to client failure, tcp sender too busy, message={}, conn={}", message, connection);
+            return true;
+        }
 
         //4. 检测qps, 是否超过流控限制，如果超过则进队列延后发送
         if (true) {
