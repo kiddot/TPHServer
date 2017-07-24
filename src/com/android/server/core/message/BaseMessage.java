@@ -68,6 +68,7 @@ public abstract class BaseMessage implements Message {
     private void decodeBinaryBody0() {
         //1.解密
         byte[] tmp = packet.body;
+        System.out.println("packet.body:" + packet.body.length);
         if (packet.hasFlag(Packet.FLAG_CRYPTO)) {
             if (connection.getSessionContext().cipher != null) {
                 tmp = connection.getSessionContext().cipher.decrypt(tmp);
@@ -82,6 +83,7 @@ public abstract class BaseMessage implements Message {
             throw new RuntimeException("message decode ex");
         }
 
+        System.out.println("tmp:" + tmp);
         packet.body = tmp;
         //Profiler.enter("time cost on [body decode]");
         decode(packet.body);

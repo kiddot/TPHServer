@@ -5,6 +5,7 @@ import com.android.server.core.connection.Connection;
 import com.android.server.netty.codec.protocol.Packet;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -91,7 +92,7 @@ public abstract class ByteBufMessage extends BaseMessage {
 
     public byte[] decodeBytes(ByteBuf body) {
         int fieldLength = body.readShort();
-        LOGGER.debug("fieldLength" + fieldLength + ",Short.MAX_VALUE:" +Short.MAX_VALUE);
+        LOGGER.warn("fieldLength" + fieldLength + ",Short.MAX_VALUE:" +Short.MAX_VALUE);
         if (fieldLength == 0) return null;
         if (fieldLength == Short.MAX_VALUE) {
             fieldLength += body.readInt();
@@ -101,7 +102,7 @@ public abstract class ByteBufMessage extends BaseMessage {
             bytes = new byte[fieldLength];
             body.readBytes(bytes);
         } catch (Exception e){
-            LOGGER.warn(e.getMessage() + e.getMessage());
+            LOGGER.warn("decodeBytes ex:"+e.toString()+ Arrays.toString(e.getStackTrace()));
         }
         return bytes;
     }

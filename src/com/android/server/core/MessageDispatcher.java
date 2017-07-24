@@ -43,7 +43,7 @@ public class MessageDispatcher implements PacketReceiver {
         if (handler != null) {
             //Profiler.enter("time cost on [dispatch]");
             try {
-                LOGGER.debug("handler(type):" + handler);
+                LOGGER.warn("handler(type):" + handler);
                 handler.handle(packet, connection);
             } catch (Throwable throwable) {
                 LOGGER.error("throwable:"+throwable.getMessage() + ",throwable.getCause():"+throwable.getCause()+ ",getStackTrace:"+Arrays.toString(throwable.getStackTrace()));

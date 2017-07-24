@@ -29,7 +29,7 @@ public class EventBus {
     }
 
     public void post(Event event) {
-        eventBus.post(event);
+        //eventBus.post(event);
     }
 
     public void register(Object bean) {

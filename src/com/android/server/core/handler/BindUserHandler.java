@@ -65,7 +65,7 @@ public final class BindUserHandler extends BaseMassageHandler<BindUserMessage> {
             if (success) {
                 context.userId = message.userId;
                 context.tags = message.tags;
-                EventBus.I.post(new UserOnlineEvent(message.getConnection(), message.userId));
+                //EventBus.I.post(new UserOnlineEvent(message.getConnection(), message.userId));
                 OkMessage.from(message).setData("bind success").sendRaw();
                 LOGGER.warn("bind user success, userId={}, session={}", message.userId, context);
             } else {

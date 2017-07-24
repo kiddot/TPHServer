@@ -41,7 +41,7 @@ public final class RouterCenter {
         }
 
         if (oldLocalRouter != null) {
-            EventBus.I.post(new RouterChangeEvent(userId, oldLocalRouter));
+            //EventBus.I.post(new RouterChangeEvent(userId, oldLocalRouter));
             LOGGER.info("register router success, find old local router={}, userId={}", oldLocalRouter, userId);
         }
 
