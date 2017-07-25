@@ -4,6 +4,7 @@ import com.android.server.core.connection.Connection;
 import com.android.server.netty.codec.protocol.JsonPacket;
 import com.android.server.netty.codec.protocol.Packet;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFutureListener;
 
 import java.io.UnsupportedEncodingException;
@@ -17,7 +18,7 @@ import static com.android.server.netty.codec.protocol.Command.PUSH;
  * Created by kiddo on 17-7-15.
  */
 
-public class PushMessage extends BaseMessage {
+public class PushMessage extends ByteBufMessage {
     public byte[] content;
 
     public String userId;
@@ -45,13 +46,15 @@ public class PushMessage extends BaseMessage {
     }
 
     @Override
-    public void decode(byte[] body) {
-        content = body;
+    public void decode(ByteBuf body) {
+        content = decodeBytes(body);
+        userId = decodeString(body);
     }
 
     @Override
-    public byte[] encode() {
-        return content;
+    public void encode(ByteBuf body) {
+        encodeBytes(body, content);
+        encodeString(body, userId);
     }
 
     @Override

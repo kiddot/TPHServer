@@ -42,9 +42,9 @@ public final class ClientPushHandler extends BaseMessageHandler<PushMessage> {
 //        System.out.println("PushCenter:" + message);
 //        message.send();
         String content = new String(message.content, Constants.UTF_8);
-        System.out.println(content + "user-0");
+        System.out.println(content + ",user:" + message.userId);
         PushSender sender = new PushServer();
-        sender.send(content, "user-0", new PushCallback() {
+        sender.send(content, message.userId, new PushCallback() {
             @Override
             public void onSuccess(String userId, ClientLocation location) {
                 System.out.println("onSuccess");
