@@ -1,7 +1,6 @@
 package com.android.server.core.push;
 
 
-import com.android.server.common.ServerListener;
 import com.android.server.common.Service;
 
 import java.util.concurrent.FutureTask;
@@ -19,6 +18,13 @@ public abstract class PushSender implements Service {
      */
     abstract FutureTask<PushResult> send(PushContext context);
 
+    /**
+     * 推送push消息
+     * @param context
+     * @param userId
+     * @param callback
+     * @return
+     */
     FutureTask<PushResult> send(String context, String userId, PushCallback callback) {
         return send(PushContext
                 .build(context)

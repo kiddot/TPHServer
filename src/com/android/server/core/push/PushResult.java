@@ -1,5 +1,8 @@
 package com.android.server.core.push;
 
+import com.android.server.core.connection.Connection;
+import com.sun.org.apache.regexp.internal.RE;
+
 import java.util.Arrays;
 
 /**
@@ -14,6 +17,16 @@ public class PushResult {
     public String userId;
     public Object[] timeLine;
     public ClientLocation location;
+    public Connection connection;
+
+    public Connection getConnection() {
+        return connection;
+    }
+
+    public PushResult setConnection(Connection connection) {
+        this.connection = connection;
+        return this;
+    }
 
     public PushResult(int resultCode) {
         this.resultCode = resultCode;

@@ -15,7 +15,20 @@ public class PushServer extends PushSender {
 
     @Override
     FutureTask<PushResult> send(PushContext context) {
-        return null;
+        if (context.isBroadcast()) {
+            return send0(context.setUserId(null));
+        } else if (context.getUserId() != null) {
+            return send0(context);
+        } else if (context.getUserIds() != null) {
+            FutureTask<PushResult> task = null;
+            for (String userId : context.getUserIds()) {
+                task = send0(context.setUserId(userId));
+            }
+            return task;
+        } else {
+            LOGGER.warn("PushServer: param error.");
+            return null;
+        }
     }
 
     private FutureTask<PushResult> send0(PushContext ctx) {
