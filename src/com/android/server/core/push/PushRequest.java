@@ -97,6 +97,11 @@ public class PushRequest extends FutureTask<PushResult> {
                 .setCallback(pushContext.getCallback());
     }
 
+    public FutureTask<PushResult> send(LocalRouter router) {
+        sendToClient(router);
+        return this;
+    }
+
     private void sumit(Status status){
         if (this.status.compareAndSet(Status.init, status)){
             boolean isTimeoutEnd = status == Status.timeout;//任务是否超时结束
@@ -124,6 +129,11 @@ public class PushRequest extends FutureTask<PushResult> {
                     .setConnection(connection);
         }
         return result;
+    }
+
+    public FutureTask<PushResult> onOffline() {
+        offline();
+        return this;
     }
 
     private void offline() {
