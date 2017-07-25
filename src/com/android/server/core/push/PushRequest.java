@@ -56,7 +56,7 @@ public class PushRequest extends FutureTask<PushResult> {
             return;
         }
 
-        PushMessage pushMessage = PushMessage.build(connection)
+        PushMessage pushMessage = PushMessage.buildPacket(connection)
                 .setClientType(localRouter.getClientType())
                 .setContent(content)
                 .setTags(tags)
@@ -64,17 +64,14 @@ public class PushRequest extends FutureTask<PushResult> {
                 .setUserId(userId)
                 .setTimeout(timeout - 500);
 
-        pushMessage.send(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                if (future.isSuccess()){
-                    LOGGER.warn("PushMessage isSuccess");
-                }
-            }
-        });
+        System.out.println("pushMessage:" + pushMessage);
+
+        pushMessage.encodeBody();
+
+        pushMessage.send();
 
         sessionId = pushMessage.getSessionId();
-        future = PushRequestBus.I.put(sessionId, PushRequest.this);
+        future = PushRequestBus.I.put(sessionId, this);
     }
 
     public static PushRequest build(PushContext pushContext){

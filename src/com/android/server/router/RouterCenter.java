@@ -15,7 +15,7 @@ public final class RouterCenter {
     public static final Logger LOGGER = LoggerFactory.getLogger(RouterCenter.class);
     public static final RouterCenter I = new RouterCenter();
 
-    private final LocalRouterManager localRouterManager = new LocalRouterManager();
+    private final LocalRouterManager localRouterManager = LocalRouterManager.getInstance();
 
 
     /**

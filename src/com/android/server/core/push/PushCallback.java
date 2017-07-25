@@ -5,7 +5,7 @@ package com.android.server.core.push;
  */
 public abstract class PushCallback {
 
-    void onResult(PushResult result) {
+    public void onResult(PushResult result) {
         switch (result.resultCode) {
             case PushResult.CODE_SUCCESS:
                 onSuccess(result.userId, result.location);
@@ -29,7 +29,7 @@ public abstract class PushCallback {
      * @param userId   成功的用户, 如果是广播, 值为空
      * @param location 用户所在机器, 如果是广播, 值为空
      */
-    abstract void onSuccess(String userId, ClientLocation location);
+    abstract public void onSuccess(String userId, ClientLocation location);
 
     /**
      * 推送失败
@@ -37,7 +37,7 @@ public abstract class PushCallback {
      * @param userId   推送用户
      * @param location 用户所在机器
      */
-    abstract void onFailure(String userId, ClientLocation location) ;
+    abstract public void onFailure(String userId, ClientLocation location) ;
 
     /**
      * 推送用户不在线
@@ -45,7 +45,7 @@ public abstract class PushCallback {
      * @param userId   推送用户
      * @param location 用户所在机器
      */
-    abstract void onOffline(String userId, ClientLocation location) ;
+    abstract public void onOffline(String userId, ClientLocation location) ;
 
     /**
      * 推送超时
@@ -53,5 +53,5 @@ public abstract class PushCallback {
      * @param userId   推送用户
      * @param location 用户所在机器
      */
-    abstract void onTimeout(String userId, ClientLocation location) ;
+    abstract public void onTimeout(String userId, ClientLocation location) ;
 }

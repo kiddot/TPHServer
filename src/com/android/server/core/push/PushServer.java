@@ -40,10 +40,11 @@ public class PushServer extends PushSender {
             return null;
             //return PushRequest.build(factory, ctx).broadcast();
         } else {
-            LocalRouterManager localRouterManager = new LocalRouterManager();
+            LocalRouterManager localRouterManager = LocalRouterManager.getInstance();
             Set<LocalRouter> localRouters = localRouterManager.lookupAll(ctx.getUserId());
             if (localRouters == null || localRouters.isEmpty()) {
                 //TODO: 做离线处理
+                LOGGER.warn("localRouters == null");
                 return PushRequest.build(ctx).onOffline();
             }
             FutureTask<PushResult> task = null;

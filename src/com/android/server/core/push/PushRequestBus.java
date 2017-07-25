@@ -2,7 +2,6 @@ package com.android.server.core.push;
 
 import com.android.server.common.BaseService;
 import com.android.server.common.ServerListener;
-import com.sun.corba.se.spi.orbutil.threadpool.ThreadPoolManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +35,7 @@ public class PushRequestBus extends BaseService {
 
     @Override
     protected void doStart(ServerListener listener) throws Throwable {
-        scheduledExecutor = Executors.newScheduledThreadPool(3);
+        scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
         listener.onSuccess();
     }
 

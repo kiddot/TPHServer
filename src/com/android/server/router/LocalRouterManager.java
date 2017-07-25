@@ -27,9 +27,21 @@ public final class LocalRouterManager implements RouterManager<LocalRouter> {
      */
     private final Map<String, Map<Integer, LocalRouter>> routers = new ConcurrentHashMap<>();
 
+    private static LocalRouterManager localRouterManager = null;
+    private LocalRouterManager(){}
+
+    public static LocalRouterManager getInstance(){
+        synchronized (LocalRouterManager.class){
+            if (localRouterManager == null){
+                localRouterManager = new LocalRouterManager();
+            }
+        }
+        return localRouterManager;
+    }
+
     @Override
     public LocalRouter register(String userId, LocalRouter router) {
-        LOGGER.info("register local router success userId={}, router={}", userId, router);
+        LOGGER.warn("register local router success userId={}, router={}", userId, router);
         Map<Integer, LocalRouter> map = new HashMap<>(1);
         map.put(router.getClientType(), router);
         routers.put(userId, map);

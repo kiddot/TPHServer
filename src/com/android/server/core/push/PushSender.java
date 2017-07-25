@@ -25,7 +25,7 @@ public abstract class PushSender implements Service {
      * @param callback
      * @return
      */
-    FutureTask<PushResult> send(String context, String userId, PushCallback callback) {
+    public FutureTask<PushResult> send(String context, String userId, PushCallback callback) {
         return send(PushContext
                 .build(context)
                 .setUserId(userId)
@@ -33,7 +33,7 @@ public abstract class PushSender implements Service {
         );
     }
 
-    FutureTask<PushResult> send(String context, String userId, AckModel ackModel, PushCallback callback) {
+    public FutureTask<PushResult> send(String context, String userId, AckModel ackModel, PushCallback callback) {
         return send(PushContext
                 .build(context)
                 .setAckModel(ackModel)

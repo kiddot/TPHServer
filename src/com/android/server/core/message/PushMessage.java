@@ -40,6 +40,10 @@ public class PushMessage extends BaseMessage {
         }
     }
 
+    public static PushMessage buildPacket(Connection connection) {
+        return new PushMessage(new Packet(PUSH, genSessionId()), connection);
+    }
+
     @Override
     public void decode(byte[] body) {
         content = body;
